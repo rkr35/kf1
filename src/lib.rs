@@ -14,8 +14,10 @@ unsafe extern "system" fn my_thread(dll: LPVOID) -> DWORD {
     let _ = std::io::stdin().read_exact(&mut buffer);
 
     wincon::FreeConsole();
-    libloaderapi::FreeLibraryAndExitThread(dll.cast(), 0);
-    0
+
+    const EXIT_SUCCESS: u32 = 0;
+    libloaderapi::FreeLibraryAndExitThread(dll.cast(), EXIT_SUCCESS);
+    EXIT_SUCCESS
 }
 
 #[no_mangle]
