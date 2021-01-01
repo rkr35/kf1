@@ -1,17 +1,30 @@
 use winapi::{
     shared::minwindef::{BOOL, DWORD, HINSTANCE, LPVOID, TRUE},
-    um::winnt::DLL_PROCESS_ATTACH,
+    um::winnt::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH},
     um::{consoleapi, libloaderapi, processthreadsapi, wincon},
 };
+
+mod logger;
+
+fn idle() {
+    use std::io::Read;
+
+    println!("Idling.");
+
+    let mut buffer = [0; 1];
+    let _ = std::io::stdin().read_exact(&mut buffer);
+}
 
 unsafe extern "system" fn my_thread(dll: LPVOID) -> DWORD {
     consoleapi::AllocConsole();
 
-    println!("A brief moment in time.");
+    if let Err(e) = logger::initialize() {
+        eprintln!("Unable to initialize logger: {}", e);
+    } else {
+        log::info!("Initialized logger.");
+    }
 
-    use std::io::Read;
-    let mut buffer = [0; 1];
-    let _ = std::io::stdin().read_exact(&mut buffer);
+    idle();
 
     wincon::FreeConsole();
 
@@ -33,6 +46,8 @@ unsafe extern "system" fn DllMain(dll: HINSTANCE, reason: DWORD, _: LPVOID) -> B
             0,                    // run function immediately
             std::ptr::null_mut(), // don't return created thread id
         );
+    } else if reason == DLL_PROCESS_DETACH {
+        log::logger().flush();
     }
 
     TRUE

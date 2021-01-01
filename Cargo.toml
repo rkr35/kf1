@@ -9,4 +9,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
+log = { version = "0.4", features = ["max_level_debug", "release_max_level_info"] }
+simplelog = "0.9"
+thiserror = "1.0"
 winapi = { version = "0.3", features = ["consoleapi", "libloaderapi", "minwindef", "processthreadsapi", "wincon", "winnt"] }
